@@ -1,11 +1,42 @@
 package timer
 
-func Timer(workInterval int, restInterval int) string {
-	//workDuration := time.Duration(workInterval) * time.Second
-	//restDuration := time.Duration(restInterval) * time.Second
+import (
+	"fmt"
+	"io"
+	"time"
+)
 
-	return "exited"
+type Timer struct {
+	WorkDuration time.Duration
+	RestDuration time.Duration
 }
 
-// this aint got no purpose. lets give it some purpose.
-// need to be able to take a work interval and a restinterval and turn it into a timer.
+// Start begins the timer using the set work duration.
+// This is the assumed "beginning" of the timer session ie. fresh timer
+func (t *Timer) Start(writer io.Writer) {
+	work := t.WorkDuration
+	ticker := time.NewTicker(1 * time.Second)
+
+	complete := make(chan bool, 1)
+
+	fmt.Println("Let's start this shit")
+	go func() {
+		for {
+			select {
+			case <-complete:
+				return
+			case datetime := <-ticker.C:
+				writer.Write([]byte(datetime.String()))
+				work -= time.Second
+				if work <= 0*time.Second {
+					complete <- true
+				}
+			}
+		}
+	}()
+	<-complete
+	ticker.Stop()
+	fmt.Println("timer done")
+	fmt.Println("finished")
+
+}
