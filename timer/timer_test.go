@@ -1,24 +1,33 @@
 package timer
 
 import (
-	"bytes"
-	"fmt"
 	"testing"
 	"time"
 )
 
-func TestTimer(t *testing.T) {
-	// this timer type will only support setting in minutes.
-	// What is a 30s work interval?
-	// though seconds can be useful since we can just decrement it on a ticker.
-	t.Run("Can configure and start a timer", func(t *testing.T) {
-		workInterval := 3 * time.Minute // in seconds
-		restInterval := 3 * time.Minute // in seconds
-		buff := bytes.Buffer{}
-		got := Timer{workInterval, restInterval}
+type TickSpy struct{
+	TickCount int
+}
 
-		got.Start(&buff)
-		fmt.Print(buff.String())
+func (t *TickSpy) Write(p []byte) (n int, err error){
+	t.TickCount++
+	return 
+}
+
+
+func TestTimer(t *testing.T) {
+	
+	t.Run("Can configure and start a timer", func(t *testing.T) {
+		workInterval := 3 * time.Second // in seconds
+		restInterval := 3 * time.Second // in seconds
+		want := 3
+		tickSpy := TickSpy{0}
+		timer := Timer{workInterval, restInterval}
+		timer.Start(&tickSpy)
+		got := tickSpy.TickCount
+		if(got != want){
+			t.Errorf("got %d, want: %d", got, want)
+		}
 	})
 
 	t.Run("Can reset the timer", func(t *testing.T) {
