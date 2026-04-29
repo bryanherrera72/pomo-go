@@ -66,9 +66,21 @@ func TestTimer(t *testing.T) {
 
 	})
 
-	t.Run("Can start a fresh timer", func(t *testing.T) { //we may need a mock timer here. the regular timer passage is too long.
+	// t.Run("Can start a fresh timer", func(t *testing.T) { //we may need a mock timer here. the regular timer passage is too long.
+	// 	//here we set a timer up that doesn't follow the normal config setup.
+	// 	timer := Timer{
+	// 		WorkDuration:     25 * time.Millisecond,
+	// 		RestDuration:     5 * time.Millisecond,
+	// 		LongRestDuration: 15 * time.Millisecond,
+	// 		Pomos:            4,
+	// 		GoalPomos:        4,
+	// 		tickSpeed:        1 * time.Millisecond,
+	// 		running:          false,
+	// 		completed:        false,
+	// 	}
+	// 	timer.Start(os.Stdout)
 
-	})
+	// })
 	// t.Run("Can configure and start a timer", func(t *testing.T) {
 	// 	workInterval := 3 * time.Second // in seconds
 	// 	restInterval := 3 * time.Second // in seconds
