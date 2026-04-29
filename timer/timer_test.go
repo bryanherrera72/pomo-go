@@ -1,6 +1,7 @@
 package timer
 
 import (
+	"bytes"
 	"testing"
 	"time"
 )
@@ -9,11 +10,12 @@ func TestConfig(t *testing.T) {
 	t.Run("Can set up a default configuration for a timer.", func(t *testing.T) {
 		got := NewConfig()
 		want := config{
-			WorkDuration:     25 * time.Minute,
-			RestDuration:     5 * time.Minute,
-			LongRestDuration: 15 * time.Minute,
+			WorkDuration:     25 * standardTimeMeasure,
+			RestDuration:     5 * standardTimeMeasure,
+			LongRestDuration: 15 * standardTimeMeasure,
 			Pomos:            4,
 			GoalPomos:        4,
+			tickSpeed: 		  standardTickInterval,
 		}
 
 		if got != want {
@@ -30,11 +32,12 @@ func TestConfig(t *testing.T) {
 		got.GoalPomos = 5
 
 		want := config{
-			WorkDuration:     50 * time.Minute,
-			RestDuration:     10 * time.Minute,
-			LongRestDuration: 30 * time.Minute,
+			WorkDuration:     50 * standardTimeMeasure,
+			RestDuration:     10 * standardTimeMeasure,
+			LongRestDuration: 30 * standardTimeMeasure,
 			Pomos:            4,
 			GoalPomos:        5,
+			tickSpeed: 		  standardTickInterval,
 		}
 
 		if got != want {
@@ -44,22 +47,18 @@ func TestConfig(t *testing.T) {
 	})
 
 }
-func TestTimer(t *testing.T) {
+func TestPomoTimer(t *testing.T) {
 	t.Run("Can configure a timer with default settings.", func(t *testing.T) {
-		config := NewConfig()
-		got := NewTimer(config)
-
-		want := Timer{
-			WorkDuration:     25 * time.Minute,
-			RestDuration:     5 * time.Minute,
-			LongRestDuration: 15 * time.Minute,
-			Pomos:            4,
-			GoalPomos:        4,
-			tickSpeed:        1 * time.Second,
-			running:          false,
-			completed:        false,
-		}
-
+		config := NewTestConfig()
+		timer := NewTimer(config)
+		want := true
+		// Check resulting string via byte buffer
+		buff := bytes.NewBuffer(make([]byte, 10))
+		timer.Start(buff)
+		time.Sleep(2 * time.Second)
+		got := timer.completed
+		
+		println(buff.String())
 		if got != want {
 			t.Errorf("got: %v, want: %v", got, want)
 		}
