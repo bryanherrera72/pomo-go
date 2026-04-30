@@ -48,10 +48,11 @@ func TestConfig(t *testing.T) {
 
 }
 func TestPomoTimer(t *testing.T) {
-	t.Run("Can configure a timer with default settings.", func(t *testing.T) {
+	t.Run("Can configure and start a timer with test config.", func(t *testing.T) {
 		config := NewTestConfig()
 		timer := NewTimer(config)
 		//testing the timer ticks with a rapid timer.
+		// WARN MAY BE INCONSISTENT. May display 0s at end or not. 
 		want := "25ms24ms23ms22ms21ms20ms19ms18ms17ms16ms15ms14ms13ms12ms11ms10ms9ms8ms7ms6ms5ms4ms3ms2ms1ms"
 		// Check resulting string via byte buffer
 		buff := new(bytes.Buffer)
@@ -61,6 +62,12 @@ func TestPomoTimer(t *testing.T) {
 		if got != want {
 			t.Errorf("got: '%v', want: '%v'", got, want)
 		}
+
+	})
+
+	//NOTE: need to handle states within the time. 
+	t.Run("Can stop a running timer", func(t *testing.T) {
+		
 
 	})
 

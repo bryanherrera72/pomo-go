@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 	"pomogo/timer"
 	"time"
@@ -9,7 +8,8 @@ import (
 
 func main() {
 	config := timer.NewTestConfig()
+	config.WorkDuration = 500 * time.Millisecond
 	timer := timer.NewTimer(config)
+	
 	timer.Start(os.Stdout)
-	fmt.Println("value: %v", timer.WorkDuration-(25*time.Minute) == time.Second)
 }

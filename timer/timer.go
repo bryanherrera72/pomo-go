@@ -21,6 +21,7 @@ type PomoTimer struct {
 	tickSpeed        time.Duration
 	running          bool
 	completed        bool
+	actions 		 chan string
 }
 
 //NewPomoTimer: returns an instance of our base pomodorro timer. 
@@ -42,15 +43,23 @@ func NewTimer(config config) PomoTimer {
 // Begins a fresh timer. Initializes state of the timer (running == completed == false)
 // 
 func (p *PomoTimer) Start(out io.Writer) {
-	workTime := &p.WorkDuration
-	ticker := time.NewTicker(p.tickSpeed)
+	workTime := p.WorkDuration
 
 	complete := make(chan bool, 1)
-	go tickHelper(p, complete, out, workTime)
+	p.running = true
+	go tickHelper(p, complete, out, &workTime)
 	<-complete
-	ticker.Stop()
-	p.completed = true
-	p.running = false
+	
+
+	
+}
+
+func (p *PomoTimer) Pause(out io.Writer){
+	p.actions <- "PAUSE"
+}
+
+func(p *PomoTimer) Resume(out io.Writer){
+	p.actions <- "PAUSE"
 }
 
 // Core to what makes the timer tick. This helper will  
@@ -68,6 +77,7 @@ func tickHelper(p *PomoTimer, cmp chan bool, out io.Writer, currentTime *time.Du
 	for {
 		select {
 		case <-cmp:
+			ticker.Stop()// warn this may causing the ticker to go one value over. so it will display 0s at end. could fix later.
 			return
 		case <-ticker.C:
 			minutesAsBytes := []byte(currentTime.String())
