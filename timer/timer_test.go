@@ -51,50 +51,17 @@ func TestPomoTimer(t *testing.T) {
 	t.Run("Can configure a timer with default settings.", func(t *testing.T) {
 		config := NewTestConfig()
 		timer := NewTimer(config)
-		want := true
+		//testing the timer ticks with a rapid timer.
+		want := "25ms24ms23ms22ms21ms20ms19ms18ms17ms16ms15ms14ms13ms12ms11ms10ms9ms8ms7ms6ms5ms4ms3ms2ms1ms"
 		// Check resulting string via byte buffer
-		buff := bytes.NewBuffer(make([]byte, 10))
+		buff := new(bytes.Buffer)
 		timer.Start(buff)
-		time.Sleep(2 * time.Second)
-		got := timer.completed
+		got := buff.String()
 		
-		println(buff.String())
 		if got != want {
-			t.Errorf("got: %v, want: %v", got, want)
+			t.Errorf("got: '%v', want: '%v'", got, want)
 		}
 
 	})
 
-	// t.Run("Can start a fresh timer", func(t *testing.T) { //we may need a mock timer here. the regular timer passage is too long.
-	// 	//here we set a timer up that doesn't follow the normal config setup.
-	// 	timer := Timer{
-	// 		WorkDuration:     25 * time.Millisecond,
-	// 		RestDuration:     5 * time.Millisecond,
-	// 		LongRestDuration: 15 * time.Millisecond,
-	// 		Pomos:            4,
-	// 		GoalPomos:        4,
-	// 		tickSpeed:        1 * time.Millisecond,
-	// 		running:          false,
-	// 		completed:        false,
-	// 	}
-	// 	timer.Start(os.Stdout)
-
-	// })
-	// t.Run("Can configure and start a timer", func(t *testing.T) {
-	// 	workInterval := 3 * time.Second // in seconds
-	// 	restInterval := 3 * time.Second // in seconds
-	// 	ticker := time.NewTicker(time.Millisecond)
-	// 	want := 3
-	// 	tickSpy := TickSpy{0}
-	// 	timer := PomoTimer{workInterval, restInterval, ticker}
-	// 	timer.Start(&tickSpy)
-	// 	got := tickSpy.TickCount
-	// 	if got != want {
-	// 		t.Errorf("got %d, want: %d", got, want)
-	// 	}
-	// })
-
-	// t.Run("Can reset the timer", func(t *testing.T) {
-	// 	//test content.
-	// })
 }

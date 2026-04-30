@@ -39,44 +39,41 @@ func NewTimer(config config) PomoTimer {
 	return timer
 }
 
-// Start begins the timer using the set work duration.
-// This is the assumed "beginning" of the timer session ie. fresh timer
+// Begins a fresh timer. Initializes state of the timer (running == completed == false)
+// 
 func (p *PomoTimer) Start(out io.Writer) {
-	// workTime := p.WorkDuration
+	workTime := &p.WorkDuration
 	ticker := time.NewTicker(p.tickSpeed)
 
 	complete := make(chan bool, 1)
-
-	// go func() {
-	// 	for {
-	// 		select {
-	// 		case <-complete:
-	// 			return
-	// 		case datetime := <-ticker.C:
-	// 			out.Write([]byte(datetime.String()))
-	// 			workTime -= standardTickInterval
-	// 			if workTime <= 0 {
-	// 				complete <- true
-	// 			}
-	// 		}
-	// 	}
-	// }()
+	go tickHelper(p, complete, out, workTime)
 	<-complete
 	ticker.Stop()
+	p.completed = true
+	p.running = false
 }
 
-//this is our worker for the timer. 
-func worker(p PomoTimer, cmp chan bool, out io.Writer, workTime time.Duration){
-	
+// Core to what makes the timer tick. This helper will  
+// tick the clock and reduce the currentTime until the time is done.
+//
+// p *PomoTimer: ref to the timer in use. 
+//
+// cmp chan bool: channel that receive a true bool when the timer is complete.
+//
+// out io.Writer: the output we wish to write to. Must implement Write() for io.Writer
+//
+// currentTime *time.Duration: Time that we wish to tick down. 
+func tickHelper(p *PomoTimer, cmp chan bool, out io.Writer, currentTime *time.Duration){
 	ticker := time.NewTicker(p.tickSpeed)
 	for {
 		select {
 		case <-cmp:
 			return
-		case datetime := <-ticker.C:
-			out.Write([]byte(datetime.String()))
-			workTime -= p.tickSpeed
-			if workTime <= 0 {
+		case <-ticker.C:
+			minutesAsBytes := []byte(currentTime.String())
+			out.Write(minutesAsBytes)
+			*currentTime -= p.tickSpeed
+			if *currentTime <= 0 {
 				cmp <- true
 			}
 		}
