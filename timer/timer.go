@@ -79,6 +79,7 @@ func ( p *PomoTimer)Time(control chan string, out io.Writer, wg *sync.WaitGroup)
 				p.running = true
 				fmt.Println("Resumed")
 			} else if action == "STOP"{
+				ticker.Stop()
 				return
 			} 
 		}
