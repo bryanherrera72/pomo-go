@@ -1,7 +1,9 @@
 package timer
 
 import (
+	"fmt"
 	"io"
+	"sync"
 	"time"
 )
 
@@ -16,12 +18,12 @@ type PomoTimer struct {
 	WorkDuration     time.Duration
 	RestDuration     time.Duration
 	LongRestDuration time.Duration
+	currentTime 	 time.Duration
 	Pomos            int
 	GoalPomos        int
 	tickSpeed        time.Duration
 	running          bool
 	completed        bool
-	actions 		 chan string
 }
 
 //NewPomoTimer: returns an instance of our base pomodorro timer. 
@@ -42,51 +44,43 @@ func NewTimer(config config) PomoTimer {
 
 // Begins a fresh timer. Initializes state of the timer (running == completed == false)
 // 
-func (p *PomoTimer) Start(out io.Writer) {
-	workTime := p.WorkDuration
-
-	complete := make(chan bool, 1)
-	p.running = true
-	go tickHelper(p, complete, out, &workTime)
-	<-complete
-	
-
-	
+func (p *PomoTimer) Start(out io.Writer, control chan string) {
+	p.currentTime = p.WorkDuration
+	control <- "RESUME"
 }
 
-func (p *PomoTimer) Pause(out io.Writer){
-	p.actions <- "PAUSE"
-}
-
-func(p *PomoTimer) Resume(out io.Writer){
-	p.actions <- "PAUSE"
-}
 
 // Core to what makes the timer tick. This helper will  
 // tick the clock and reduce the currentTime until the time is done.
-//
-// p *PomoTimer: ref to the timer in use. 
-//
-// cmp chan bool: channel that receive a true bool when the timer is complete.
-//
-// out io.Writer: the output we wish to write to. Must implement Write() for io.Writer
-//
-// currentTime *time.Duration: Time that we wish to tick down. 
-func tickHelper(p *PomoTimer, cmp chan bool, out io.Writer, currentTime *time.Duration){
+// the control channel can send events for play / pause / resume / stop
+func ( p *PomoTimer)Time(control chan string, out io.Writer, wg *sync.WaitGroup){
+	defer wg.Done()
 	ticker := time.NewTicker(p.tickSpeed)
-	for {
-		select {
-		case <-cmp:
-			ticker.Stop()// warn this may causing the ticker to go one value over. so it will display 0s at end. could fix later.
-			return
-		case <-ticker.C:
-			minutesAsBytes := []byte(currentTime.String())
-			out.Write(minutesAsBytes)
-			*currentTime -= p.tickSpeed
-			if *currentTime <= 0 {
-				cmp <- true
+
+	for{
+		select{
+		case <- ticker.C:
+			if(p.running){
+				timeAsBytes := []byte(p.currentTime.String())
+				out.Write(timeAsBytes)
+				p.currentTime -= p.tickSpeed
+				if p.currentTime <= 0{
+					p.running = false
+					p.completed = true
+					ticker.Stop()
+					return
+				}
 			}
+		case action := <-control:
+			if action == "PAUSE"{
+				p.running = false
+				fmt.Println("Paused")
+			} else if action == "RESUME"{
+				p.running = true
+				fmt.Println("Resumed")
+			} else if action == "STOP"{
+				return
+			} 
 		}
 	}
-	
 }

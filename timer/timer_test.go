@@ -2,6 +2,7 @@ package timer
 
 import (
 	"bytes"
+	"sync"
 	"testing"
 	"time"
 )
@@ -56,7 +57,15 @@ func TestPomoTimer(t *testing.T) {
 		want := "25ms24ms23ms22ms21ms20ms19ms18ms17ms16ms15ms14ms13ms12ms11ms10ms9ms8ms7ms6ms5ms4ms3ms2ms1ms"
 		// Check resulting string via byte buffer
 		buff := new(bytes.Buffer)
-		timer.Start(buff)
+		control := make(chan string)
+		defer close(control)
+		// timer.Start(buff, control)
+		var wg sync.WaitGroup
+		wg.Add(1)
+		go timer.Time(control, buff, &wg)
+		timer.Start(buff, control)
+		wg.Wait()
+		
 		got := buff.String()
 		
 		if got != want {
