@@ -21,11 +21,11 @@ const (
 )
 
 
-type Timer interface {
- NewTimer(config config)
-// 	Start(io.Writer, chan string)
-// 	Resume(io.Writer, chan string)
-// 	Pause(io.Writer, chan string)
+type Timer interface {//TODO: Not sure if I'll need this interface yet, just keeping it here for now.
+ 	NewTimer(config config)
+ 	Start(io.Writer, chan string)
+ 	Resume(io.Writer, chan string)
+ 	Pause(io.Writer, chan string)
 }
 
 type PomoTimer struct {
@@ -73,7 +73,15 @@ func (p *PomoTimer) Stop(out io.Writer, control chan string){
 	control <- STOP
 }
 
+func(p *PomoTimer) Pause(out io.Writer, control chan string){
+	p.running = false
+	control <- PAUSE
+}
 
+func(p *PomoTimer) Resume(out io.Writer, control chan string){
+	p.running = true
+	control <- RESUME
+} 
 // Core to what makes the timer tick. This helper will  
 // tick the clock and reduce the currentTime until the time is done.
 // the control channel can send events for play / pause / resume / stop
@@ -96,7 +104,7 @@ func (p *PomoTimer) Time(control chan string, out io.Writer, wg *sync.WaitGroup)
 				}
 			}
 		case action := <-control:// signals when an action is provided.
-			switch action {
+			switch action {//TODO: get rid of these print statements. 
 			case PAUSE:
 				p.running = false
 				fmt.Println("Paused")
