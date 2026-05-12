@@ -53,7 +53,6 @@ func TestPomoTimer(t *testing.T) {
 		config := NewTestConfig()
 		timer := NewTimer(config)
 		//testing the timer ticks with a rapid timer.
-		// WARN MAY BE INCONSISTENT. May display 0s at end or not. 
 		want := "25ms24ms23ms22ms21ms20ms19ms18ms17ms16ms15ms14ms13ms12ms11ms10ms9ms8ms7ms6ms5ms4ms3ms2ms1ms"
 		// Check resulting string via byte buffer
 		buff := new(bytes.Buffer)
@@ -76,28 +75,28 @@ func TestPomoTimer(t *testing.T) {
 	//NOTE: This test is finnicky since the timer may be stopped just before 2ms 
 	// or just after. Will need to think of a better test method. Might only be able to 
 	// reliably check the completed / running state of the timer for now. 
-	t.Run("Can stop a running timer", func(t *testing.T) {//TODO: Refactor this to check timer state.
-		// config := NewTestConfig()
-		// timer := NewTimer(config)
-		// //testing the timer ticks with a rapid timer.
-		// want := "25ms24ms"
-		// buff := new(bytes.Buffer)
-		// control := make(chan string)
-		// defer close(control)
-		// var wg sync.WaitGroup
-		// wg.Add(1)
-		// go timer.Time(control, buff, &wg)
-		// timer.Start(buff, control)
-		// time.Sleep(2 * time.Millisecond)
-		// timer.Stop(buff, control)
-		// wg.Wait()
+	// t.Run("Can stop a running timer", func(t *testing.T) {//TODO: Refactor this to check timer state.
+	// 	config := NewTestConfig()
+	// 	timer := NewTimer(config)
+	// 	//testing the timer ticks with a rapid timer.
+	// 	want := "25ms24ms"
+	// 	buff := new(bytes.Buffer)
+	// 	control := make(chan string)
+	// 	defer close(control)
+	// 	var wg sync.WaitGroup
+	// 	wg.Add(1)
+	// 	go timer.Time(control, buff, &wg)
+	// 	timer.Start(buff, control)
+	// 	time.Sleep(2 * time.Millisecond)
+	// 	timer.Stop(buff, control)
+	// 	wg.Wait()
 		
-		// got := buff.String()
+	// 	got := buff.String()
 		
-		// if got != want {
-		// 	t.Errorf("got: '%v', want: '%v'", got, want)
-		// }
-	})
+	// 	if got != want {
+	// 		t.Errorf("got: '%v', want: '%v'", got, want)
+	// 	}
+	// })
 
 	t.Run("can pause and resume a running timer", func(t *testing.T) {
 		var completed bool
@@ -107,6 +106,8 @@ func TestPomoTimer(t *testing.T) {
 		config := NewTestConfig()
 		timer := NewTimer(config)
 		buff := new(bytes.Buffer)
+
+		//setup the control channel
 		control := make(chan string)
 		defer close(control)
 		var wg sync.WaitGroup
@@ -114,15 +115,19 @@ func TestPomoTimer(t *testing.T) {
 		go timer.Time(control, buff, &wg)
 		timer.Start(buff, control)
 		timer.Pause(buff, control)
+
+		// get the state of the timer while paused. 
 		running = timer.running
 		completed = timer.completed
+
 		got := running == false && completed == false 
 
 		//spot check the timer state. should not be running and not completed.
 		if got != want {
 			t.Errorf("got: %v, want %v. Timer running state: %v. Timer completed state: %v", got, want, running, completed)
 		} 
-
+		
+		//pull state of the timer while resumed. 
 		timer.Resume(buff, control)
 		running = timer.running
 		completed = timer.completed

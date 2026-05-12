@@ -32,9 +32,9 @@ type PomoTimer struct {
 	WorkDuration     time.Duration
 	RestDuration     time.Duration
 	LongRestDuration time.Duration
-	currentTime 	 time.Duration
 	Pomos            int
 	GoalPomos        int
+	currentTime 	 time.Duration
 	tickSpeed        time.Duration
 	running          bool
 	completed        bool
@@ -84,8 +84,8 @@ func(p *PomoTimer) Resume(out io.Writer, control chan string){
 } 
 // Core to what makes the timer tick. This helper will  
 // tick the clock and reduce the currentTime until the time is done.
-// the control channel can send events for play / pause / resume / stop
-func (p *PomoTimer) Time(control chan string, out io.Writer, wg *sync.WaitGroup){
+// the control channel can be sent events for play / pause / resume / stop
+func (p *PomoTimer) Time(control chan string, out io.ReadWriter, wg *sync.WaitGroup){
 	defer wg.Done()
 	ticker := time.NewTicker(p.tickSpeed)
 
@@ -99,6 +99,7 @@ func (p *PomoTimer) Time(control chan string, out io.Writer, wg *sync.WaitGroup)
 				if p.currentTime <= 0{
 					p.running = false
 					p.completed = true
+
 					ticker.Stop()
 					return
 				}
