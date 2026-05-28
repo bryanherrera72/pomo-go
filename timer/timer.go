@@ -38,6 +38,17 @@ type PomoTimer struct {
 	tickSpeed        time.Duration
 	running          bool
 	completed        bool
+	TickCh			 chan TickMsg
+}
+
+//Our timer will fire on a tick. This is based on the implementation in the 
+// bubbles package. Won't need IDs really since there will only be one timer running
+type TickMsg struct{
+	ID int
+
+	Timeout bool
+
+	tag int
 }
 
 //NewPomoTimer: returns an instance of our base pomodorro timer. 
@@ -103,6 +114,7 @@ func (p *PomoTimer) Time(control chan string, out io.ReadWriter, wg *sync.WaitGr
 					ticker.Stop()
 					return
 				}
+				p.TickCh <- TickMsg{}
 			}
 		case action := <-control:// signals when an action is provided.
 			switch action {//TODO: get rid of these print statements. 

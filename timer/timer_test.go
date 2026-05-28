@@ -98,7 +98,7 @@ func TestPomoTimer(t *testing.T) {
 	// 	}
 	// })
 
-	t.Run("can pause and resume a running timer", func(t *testing.T) {
+	t.Run("can pause and resume a timer", func(t *testing.T) {
 		var completed bool
 		var running bool
 
